@@ -13,7 +13,178 @@
   </head>
 
   <body>
+    <div id="left-hotspot" aria-hidden="true"></div><!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sketch</title>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <script src="libraries/p5.min.js"></script>
+    <script src="libraries/p5.sound.min.js"></script>
+  </head>
+
+  <body>
     <div id="left-hotspot" aria-hidden="true"></div>
+
+    <nav id="side-menu" class="collapsed" aria-label="側選單">
+      <ul>
+  <li><a href="#" id="link-works">第一單元作品</a></li>
+  <li><a href="#" id="link-handout">第一單元講義</a></li>
+        <li><a href="#" id="link-exam">測驗系統</a></li>
+  <li><a href="#" id="link-notes">測驗卷筆記</a></li>
+  <li class="has-submenu">
+    <a href="#" id="link-tku">淡江大學</a>
+    <ul class="submenu">
+      <li><a href="#" id="link-dept">教育科技學系</a></li>
+    </ul>
+  </li>
+  <li><a href="#" id="link-home">回到首頁</a></li>
+      </ul>
+    </nav>
+
+    <!-- iframe overlay (hidden by default) -->
+    <div id="iframe-overlay" class="hidden" aria-hidden="true">
+      <div class="iframe-container" role="dialog" aria-label="內容視窗">
+        <button id="iframe-close" aria-label="關閉">×</button>
+        <iframe id="content-iframe" src="" frameborder="0" title="內容視窗"></iframe>
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        const menu = document.getElementById('side-menu');
+        const hotspot = document.getElementById('left-hotspot');
+
+        function openMenu() {
+          menu.classList.add('open');
+          menu.classList.remove('collapsed');
+        }
+        function closeMenu() {
+          menu.classList.remove('open');
+          menu.classList.add('collapsed');
+        }
+
+        // hotspot hover
+        hotspot.addEventListener('mouseenter', openMenu);
+        hotspot.addEventListener('mouseleave', closeMenu);
+
+        // also support global mousemove so any part of the window left <=100 opens it
+        document.addEventListener('mousemove', (e) => {
+          if (e.clientX <= 100) {
+            openMenu();
+            return;
+          }
+          // if mouse is inside the menu keep it open
+          const rect = menu.getBoundingClientRect();
+          if (e.clientX >= rect.left && e.clientX <= rect.right) return;
+          closeMenu();
+        });
+
+        // ----- iframe open/close for 第一單元作品 -----
+        const linkWorks = document.getElementById('link-works');
+        const iframeOverlay = document.getElementById('iframe-overlay');
+        const iframeEl = document.getElementById('content-iframe');
+        const iframeClose = document.getElementById('iframe-close');
+
+        function openIframe(url) {
+          iframeEl.src = url;
+          iframeOverlay.classList.remove('hidden');
+          iframeOverlay.setAttribute('aria-hidden', 'false');
+        }
+        function closeIframe() {
+          iframeOverlay.classList.add('hidden');
+          iframeOverlay.setAttribute('aria-hidden', 'true');
+          // 清除 src 以停止播放/釋放資源
+          iframeEl.src = '';
+        }
+
+        linkWorks.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          openIframe('https://albert960216-sys.github.io/20251020/');
+        });
+
+        // 第一單元講義 - 在 overlay iframe 中開啟 HackMD
+        const linkHandout = document.getElementById('link-handout');
+        if (linkHandout) {
+          linkHandout.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            openIframe('https://hackmd.io/@PpMAWuZXQIGlObSuJ0EL-A/HyzWuQColl');
+          });
+        }
+
+        // 測驗系統 - 在 overlay iframe 中開啟測驗頁面
+        const linkExam = document.getElementById('link-exam');
+        if (linkExam) {
+          linkExam.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            openIframe('https://albert960216-sys.github.io/20251103/');
+          });
+        }
+
+        // 測驗卷筆記 - 在 overlay iframe 中開啟 HackMD 筆記
+        const linkNotes = document.getElementById('link-notes');
+        if (linkNotes) {
+          linkNotes.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            openIframe('https://hackmd.io/@PpMAWuZXQIGlObSuJ0EL-A/HyOIwf51Wx');
+          });
+        }
+
+        // 淡江大學 - 在 overlay iframe 中開啟官方網站
+        const linkTku = document.getElementById('link-tku');
+        if (linkTku) {
+          linkTku.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            openIframe('https://www.tku.edu.tw/');
+          });
+        }
+
+        // 教育科技學系（子選單） - 在 overlay iframe 中開啟 HackMD 筆記
+        const linkDept = document.getElementById('link-dept');
+        if (linkDept) {
+          linkDept.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            openIframe('https://hackmd.io/@PpMAWuZXQIGlObSuJ0EL-A/ryr9Qd7gWe');
+          });
+        }
+
+        // 回到首頁：關閉 overlay、收回選單並捲回頂端（不重新載入）
+        const linkHome = document.getElementById('link-home');
+        if (linkHome) {
+          linkHome.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            // 關閉 iframe overlay（若開啟）
+            closeIframe();
+            // 收回側選單
+            closeMenu();
+            // 平滑捲回到頂端
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // 若需要強制重置所有 JS 狀態，可改為重新載入： location.reload();
+          });
+        }
+
+        iframeClose.addEventListener('click', closeIframe);
+
+        // 點擊 overlay 空白處也關閉
+        iframeOverlay.addEventListener('click', (ev) => {
+          if (ev.target === iframeOverlay) closeIframe();
+        });
+
+        // Esc 鍵關閉
+        document.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Escape') closeIframe();
+        });
+      })();
+    </script>
+
+    <script src="sketch.js"></script>
+  </body>
+</html>
+
 
     <nav id="side-menu" class="collapsed" aria-label="側選單">
       <ul>
